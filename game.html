@@ -1,0 +1,126 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>flappybird game</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 336,
+        height: 483,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 300 },
+                debug: false
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    var bird;
+    var platforms;
+    var JumpKey;
+    var gameOver = false;
+    var game = new Phaser.Game(config);
+    var framesMove;
+    var player;
+    function preload ()
+    {
+        //배경 및 땅
+        this.load.image('background', 'images/1.png');
+        this.load.spritesheet('ground', 'images/ground-sprite.png', {
+            frameWidth: 336,
+            frameHeight: 112
+        });
+        
+        //파이프
+        this.load.image('up_pipe', 'images/bg_pillarUp.png');
+        this.load.image('down_pipe', 'images/bg_pillarDown.png');
+
+
+    
+        //숫자
+        this.load.image('number0', 'images/num0.bmp');
+        this.load.image('number1', 'images/num1.bmp');
+        this.load.image('number2', 'images/num2.bmp');
+        this.load.image('number3', 'images/num3.bmp');
+        this.load.image('number4', 'images/num4.bmp');
+        this.load.image('number5', 'images/num5.bmp');
+        this.load.image('number6', 'images/num6.bmp');
+        this.load.image('number7', 'images/num7.bmp');
+        this.load.image('number8', 'images/num8.bmp');
+        this.load.image('number9', 'images/num9.bmp');
+    }
+
+    function create ()
+    {
+        background = this.add.image(168, 241, 'background').setInteractive();
+
+        //파이프
+        // pipeGroup = this.physics.add.group();
+        // pipeGroup.create(400, 0, 'up_pipe');
+        // pipeGroup.create(400, 656, 'down_pipe');
+        
+
+        ground = this.physics.add.sprite(168, 598, 'ground');
+        ground.setCollideWorldBounds(true);
+        ground.setDepth(10);
+
+
+        JumpKey = this.input.keyboard.createCursorKeys();
+
+
+        //땅 움직임
+        this.anims.create({
+            key: 'ground-moving',
+            frames: this.anims.generateFrameNumbers('ground', {
+                start: 0,
+                end: 2
+            }),
+            frameRate: 15,
+            repeat: -1
+        })
+        this.anims.create({
+            key: 'ground-stop',
+            frames: [{
+                key: 'ground',
+                frame: 0
+            }],
+            frameRate: 20
+        })
+
+
+        PrepareGame(this);
+        
+    }
+
+    function update ()
+    {
+
+
+    }
+    
+    function PrepareGame(scene){
+        framesMove = 0;
+
+        ground.anims.play('ground-moving', true);
+    }
+</script>
+
+</body>
+</html>
