@@ -35,10 +35,14 @@
     var bird;
     var platforms;
     var JumpKey;
-    var gameOver = false;
+    var gameOver;
+    var gameStarted;
     var game = new Phaser.Game(config);
-    var framesMove;
+    var framesMove = 0;
     var player;
+    var cursors;
+    var space;
+    
     function preload ()
     {
         //배경 및 땅
@@ -47,12 +51,19 @@
             frameWidth: 336,
             frameHeight: 112
         });
-        
+
+        //시작화면
+        this.load.image('Initial_Message', 'images/initial-message.png')
+
         //파이프
         this.load.image('up_pipe', 'images/bg_pillarUp.png');
         this.load.image('down_pipe', 'images/bg_pillarDown.png');
 
-
+        //새
+        this.load.spritesheet('bird', 'images/birdbird1.png', {
+            frameWidth: 40,
+            frameHeight: 29
+        });
     
         //숫자
         this.load.image('number0', 'images/num0.bmp');
@@ -77,14 +88,16 @@
         // pipeGroup.create(400, 656, 'down_pipe');
         
 
-        ground = this.physics.add.sprite(168, 598, 'ground');
+        ground = this.physics.add.sprite(168, 300, 'ground');
         ground.setCollideWorldBounds(true);
         ground.setDepth(10);
 
+        Initial_Message = this.add.image(168, 161, 'Initial_Message');
+        Initial_Message.setDepth(30);
+        Initial_Message.visible = false;
 
-        JumpKey = this.input.keyboard.createCursorKeys();
-
-
+        space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        
         //땅 움직임
         this.anims.create({
             key: 'ground-moving',
@@ -103,7 +116,25 @@
             }],
             frameRate: 20
         })
-
+        
+        //새 움직임
+        this.anims.create({
+            key: 'bird-fly',
+            frames: this.anims.generateFrameNumbers('bird', { 
+                start: 0, 
+                end: 2 
+            }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'bird-stop',
+            frames: [{
+                key: 'bird',
+                frame: 1
+            }],
+            frameRate: 20
+        })
 
         PrepareGame(this);
         
@@ -111,15 +142,55 @@
 
     function update ()
     {
-
-
-    }
+        if(Phaser.Input.Keyboard.JustDown(space)){
+            moveBird();
+        }
     
+    }
+
     function PrepareGame(scene){
         framesMove = 0;
+        gameOver = false;
+        Initial_Message.visible = true;
 
+        player = scene.physics.add.sprite(60, 200, 'bird');
+        player.setCollideWorldBounds(true);
+        player.anims.play('bird-fly', true);
+        player.body.allowGravity = false;
+        
+
+        scene.physics.add.collider(player, ground, hitBird, null, scene)
+        
         ground.anims.play('ground-moving', true);
+
     }
+
+    function moveBird(){
+        if (!gameStarted){
+            startGame(game.scene.scenes[0])
+        }
+        player.setVelocityY(-350);
+        player.angle = -15;
+        // framesMove = 5;
+    }
+
+    function hitBird(player){
+        this.physics.pause();
+
+        gameOver = true;
+        gameStarted = false;
+
+        player.anims.play('bird-stop');
+        ground.anims.play('ground-stop');
+    }
+
+    function startGame(scene) {
+        gameStarted = true
+        Initial_Message.visible = false
+        player.body.allowGravity = true;
+        player.body.setGravityY(900);
+    }
+
 </script>
 
 </body>
