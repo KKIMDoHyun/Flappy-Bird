@@ -92,8 +92,9 @@
     function create ()
     {
         background = this.add.image(168, 241, 'background').setInteractive();
+        background.on('pointerdown', moveBird);
 
-        gapsGroup = this.physics.add.group()
+        gapsGroup = this.physics.add.group();
         pipe = this.physics.add.group();
         scrore = this.physics.add.staticGroup();
         
@@ -147,19 +148,21 @@
 
         PrepareGame(this);
         
-        gameOverCard = this.add.image(168, 206, 'gameOverCard');
+        gameOverCard = this.add.image(168, 180, 'gameOverCard');
         gameOverCard.setDepth(20);
         gameOverCard.visible = false;
 
-        restartButton = this.add.image(168, 300, 'restart').setInteractive();
-        // restartButton.on('pointerdown', restartGame);
+        restartButton = this.add.image(168, 250, 'restart').setInteractive();
         restartButton.setDepth(20);
         restartButton.visible = false;
-
+        restartButton.on('pointerdown', restart);
+        
     }
 
-    function update ()
-    {
+    function update (){
+        if (gameOver || !gameStarted){
+            return
+        }
         if(framesMove > 0){
             framesMove--;
         }
@@ -183,11 +186,11 @@
         })
         ////
         gapsGroup.children.iterate(function (child) {
-        child.body.setVelocityX(-100)
+            child.body.setVelocityX(-100)
         })
         ////
         nextPipe++;
-        if(nextPipe == 150){
+        if(nextPipe == 130){
             makePipe(game.scene.scenes[0])
             nextPipe = 0;
         }
@@ -199,6 +202,7 @@
         gameOver = false;
         nextPipe = 0;
         currentPipe = assets.pipe;
+        background.visible = true
         Initial_Message.visible = true;
 
         player = scene.physics.add.sprite(60, 200, 'bird');
@@ -208,12 +212,16 @@
         
 
         scene.physics.add.collider(player, ground, hitBird, null, scene)
-        
+        scene.physics.add.collider(player, pipe, hitBird, null, scene)
+
         ground.anims.play('ground-moving', true);
 
     }
 
     function moveBird(){
+        if(gameOver){
+            return
+        }
         if (!gameStarted){
             startGame(game.scene.scenes[0])
         }
@@ -236,17 +244,20 @@
     }
 
     function makePipe(scene){
-        
-        const pipeTopY = Phaser.Math.Between(-120, 120)
-        var gap = scene.add.line(288, pipeTopY + 210, 0, 0, 0, 98)
-        gapsGroup.add(gap)
-        gap.body.allowGravity = false
-        gap.visible = false
+        if (!gameStarted || gameOver){
+            return
+        }
+        const pipeTopY = Phaser.Math.Between(-70, 120)
+        // console.log(pipeTopY)
+        // const gap = scene.add.line(336, pipeTopY + 210, 0, 0, 0, 98)
+        // gapsGroup.add(gap)
+        // gap.body.allowGravity = false
+        // gap.visible = false
 
-        const pipeTop = pipe.create(288, pipeTopY, currentPipe.top)
+        const pipeTop = pipe.create(336, pipeTopY, currentPipe.top)
         pipeTop.body.allowGravity = false
 
-        const pipeBottom = pipe.create(288, pipeTopY + 420, currentPipe.bottom)
+        const pipeBottom = pipe.create(336, pipeTopY + 350, currentPipe.bottom)
         pipeBottom.body.allowGravity = false
     }
     
@@ -255,8 +266,21 @@
         Initial_Message.visible = false
         player.body.allowGravity = true;
         player.body.setGravityY(900);
+
+        makePipe(scene);
     }
 
+    function restart(){
+        pipe.clear(true, true);
+        gapsGroup.clear(true, true);
+        player.destroy();
+        gameOverCard.visible = false;
+        restartButton.visible = false;
+
+        PrepareGame(game.scene.scenes[0]);
+
+        game.scene.scenes[0].physics.resume();
+    }
 </script>
 
 </body>
