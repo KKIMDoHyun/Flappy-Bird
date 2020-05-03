@@ -50,10 +50,16 @@
     var space;
     var nextPipe;
     var currentPipe;
+    var scoreGroup;
+    var score;
+    var rank = [];
+    var rankIndex = 0;
+    var max = 0;
+
     function preload ()
     {
         //배경 및 땅
-        this.load.image('background', 'images/1.png');
+        this.load.image('background', 'images/background.png');
         this.load.spritesheet('ground', 'images/ground-sprite.png', {
             frameWidth: 336,
             frameHeight: 112
@@ -73,20 +79,33 @@
         });
     
         //숫자
-        this.load.image('number0', 'images/num0.bmp');
-        this.load.image('number1', 'images/num1.bmp');
-        this.load.image('number2', 'images/num2.bmp');
-        this.load.image('number3', 'images/num3.bmp');
-        this.load.image('number4', 'images/num4.bmp');
-        this.load.image('number5', 'images/num5.bmp');
-        this.load.image('number6', 'images/num6.bmp');
-        this.load.image('number7', 'images/num7.bmp');
-        this.load.image('number8', 'images/num8.bmp');
-        this.load.image('number9', 'images/num9.bmp');
+        this.load.image('number0', 'images/number0.png');
+        this.load.image('number1', 'images/number1.png');
+        this.load.image('number2', 'images/number2.png');
+        this.load.image('number3', 'images/number3.png');
+        this.load.image('number4', 'images/number4.png');
+        this.load.image('number5', 'images/number5.png');
+        this.load.image('number6', 'images/number6.png');
+        this.load.image('number7', 'images/number7.png');
+        this.load.image('number8', 'images/number8.png');
+        this.load.image('number9', 'images/number9.png');
+
+        //기록용 숫자
+        this.load.image('num0', 'images/small0.png');
+        this.load.image('num1', 'images/small1.png');
+        this.load.image('num2', 'images/small2.png');
+        this.load.image('num3', 'images/small3.png');
+        this.load.image('num4', 'images/small4.png');
+        this.load.image('num5', 'images/small5.png');
+        this.load.image('num6', 'images/small6.png');
+        this.load.image('num7', 'images/small7.png');
+        this.load.image('num8', 'images/small8.png');
+        this.load.image('num9', 'images/small9.png');
 
         //결과 화면
         this.load.image('gameOverCard', 'images/gameOver.png');
         this.load.image('restart', 'images/restart-button.png');
+        this.load.image('scoreBoard', 'images/score_board.png');
     }
 
     function create ()
@@ -96,8 +115,10 @@
 
         gapsGroup = this.physics.add.group();
         pipe = this.physics.add.group();
-        scrore = this.physics.add.staticGroup();
-        
+        scoreGroup = this.physics.add.staticGroup();
+        scoreGroup2 = this.physics.add.staticGroup();
+        scoreGroup3 = this.physics.add.staticGroup();
+
         ground = this.physics.add.sprite(168, 500, 'ground');
         ground.setCollideWorldBounds(true);
         ground.setDepth(10);
@@ -148,14 +169,19 @@
 
         PrepareGame(this);
         
-        gameOverCard = this.add.image(168, 180, 'gameOverCard');
+        gameOverCard = this.add.image(168, 120, 'gameOverCard');
         gameOverCard.setDepth(20);
         gameOverCard.visible = false;
 
-        restartButton = this.add.image(168, 250, 'restart').setInteractive();
+        scoreBoard = this.add.image(168, 250, 'scoreBoard');
+        scoreBoard.setDepth(20);
+        scoreBoard.visible = false;
+
+        restartButton = this.add.image(168, 370, 'restart').setInteractive();
         restartButton.setDepth(20);
         restartButton.visible = false;
         restartButton.on('pointerdown', restart);
+
         
     }
 
@@ -201,6 +227,7 @@
         framesMove = 0;
         gameOver = false;
         nextPipe = 0;
+        score = 0;
         currentPipe = assets.pipe;
         background.visible = true
         Initial_Message.visible = true;
@@ -213,10 +240,34 @@
 
         scene.physics.add.collider(player, ground, hitBird, null, scene)
         scene.physics.add.collider(player, pipe, hitBird, null, scene)
-
+        scene.physics.add.overlap(player, gapsGroup, updateScore, null, scene)
+        
         ground.anims.play('ground-moving', true);
 
     }
+
+    function updateScore(_, gap) {
+        score++
+        gap.destroy()
+        // console.log(score)
+        
+        scoreGroup.clear(true, true)
+        const scoreString = score.toString()
+        //  console.log(scoreString.length)
+        if (scoreString.length == 1){
+            scoreGroup.create(168, 60, 'number'+ score).setDepth(10)
+            // console.log('number'+score)
+        }
+        else{
+            let initialPosition = 168 - ((score.toString().length * 25) / 2)
+
+            for(let i = 0; i < scoreString.length; i++){
+                scoreGroup.create(initialPosition, 60, 'number'+scoreString[i]).setDepth(10)
+                initialPosition = initialPosition + 30
+            }
+        }
+    }
+
 
     function moveBird(){
         if(gameOver){
@@ -235,12 +286,56 @@
 
         gameOver = true;
         gameStarted = false;
-
+        scoreGroup2.clear(true, true)
         player.anims.play('bird-stop');
         ground.anims.play('ground-stop');
+        
+        rank[rankIndex] = score;
+        // console.log(rank[rankIndex])
 
+        const scoreString1 = rank[rankIndex].toString()
+        if (scoreString1.length == 1){
+            scoreGroup2.create(250, 235, 'num' + score).setDepth(30)
+        }
+        else{
+            let initialPosition = 250 - ((score.toString().length * 7) / 2)
+
+            for(let i = 0; i < scoreString1.length; i++){
+                scoreGroup2.create(initialPosition, 235, 'num' + scoreString1[i]).setDepth(30)
+                initialPosition = initialPosition + 15
+            }
+        }
+
+        for(let j = 0; j <= rankIndex; j++){
+            if(rank[j] > max){
+                max = rank[j]   
+            }
+        }
+        
+        console.log("max ="+ max)
+        scoreGroup3.clear(true, true)
+        const scoreString2 = max.toString()
+        if (scoreString2.length == 1){
+            scoreGroup3.create(250, 285, 'num' + max).setDepth(30)
+
+        }
+        else{
+            let initialPosition = 250 - ((max.toString().length * 7) / 2)
+
+            for(let i = 0; i < scoreString2.length; i++){
+                scoreGroup3.create(initialPosition, 235, 'num' + scoreString2[i]).setDepth(30)
+                initialPosition = initialPosition + 15
+            }
+        }
+
+
+        rankIndex++
+
+        
+        scoreBoard.visible = true;
         gameOverCard.visible = true;
         restartButton.visible = true;
+        
     }
 
     function makePipe(scene){
@@ -248,17 +343,19 @@
             return
         }
         const pipeTopY = Phaser.Math.Between(-70, 120)
-        // console.log(pipeTopY)
-        // const gap = scene.add.line(336, pipeTopY + 210, 0, 0, 0, 98)
-        // gapsGroup.add(gap)
-        // gap.body.allowGravity = false
-        // gap.visible = false
+        
+        const gap = scene.add.line(336, pipeTopY + 175, 0, 0, 0, 98)
+        gapsGroup.add(gap)
+        
+        gap.body.allowGravity = false
+        gap.visible = false
 
         const pipeTop = pipe.create(336, pipeTopY, currentPipe.top)
         pipeTop.body.allowGravity = false
 
         const pipeBottom = pipe.create(336, pipeTopY + 350, currentPipe.bottom)
         pipeBottom.body.allowGravity = false
+
     }
     
     function startGame(scene) {
@@ -267,13 +364,21 @@
         player.body.allowGravity = true;
         player.body.setGravityY(900);
 
+        const startScore = scoreGroup.create(168, 60, 'number0')
+        startScore.setDepth(20)
+
         makePipe(scene);
     }
 
     function restart(){
         pipe.clear(true, true);
         gapsGroup.clear(true, true);
+        scoreGroup.clear(true, true);
+        scoreGroup2.clear(true, true)
+        scoreGroup3.clear(true, true)
         player.destroy();
+
+        scoreBoard.visible = false;
         gameOverCard.visible = false;
         restartButton.visible = false;
 
