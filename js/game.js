@@ -39,6 +39,7 @@ var score;
 var rank = [];
 var rankIndex = 0;
 var max = 0;
+var starPoint = 0;
 
 function preload ()
 {
@@ -96,6 +97,8 @@ function preload ()
     this.load.image('gameOverCard', 'images/gameOver.png');
     this.load.image('restart', 'images/restart-button.png');
     this.load.image('scoreBoard', 'images/score_board.png');
+
+    this.load.image('star', 'images/star.png');
 }
 
 function create ()
@@ -107,10 +110,11 @@ function create ()
     pipe = this.physics.add.group();
     medal = this.physics.add.staticGroup();
     ranking = this.physics.add.staticGroup();
-    ranking_score = this.physics.add.staticGroup();
+    // ranking_score = this.physics.add.staticGroup();
     scoreGroup = this.physics.add.staticGroup();
     scoreGroup2 = this.physics.add.staticGroup();
     scoreGroup3 = this.physics.add.staticGroup();
+    star = this.physics.add.group();
     
 
     ground = this.physics.add.sprite(168, 500, 'ground');
@@ -197,6 +201,18 @@ function update (){
         player.angle = player.angle + 1
     }
 
+    star.children.iterate(function (child){
+        if(child == undefined){
+            return;
+        }
+        if(child.x < -50){
+            child.destroy();
+        }
+        else{
+            child.setVelocityX(-100);
+        }
+    })
+
     pipe.children.iterate(function (child){
         if(child == undefined){
             return;
@@ -238,6 +254,7 @@ function PrepareGame(scene){
 
     scene.physics.add.collider(player, ground, hitBird, null, scene)
     scene.physics.add.collider(player, pipe, hitBird, null, scene)
+    scene.physics.add.overlap(player, star, collectStar, null, scene)
     scene.physics.add.overlap(player, gapsGroup, updateScore, null, scene)
     
     ground.anims.play('ground-moving', true);
@@ -352,7 +369,9 @@ function hitBird(player){
     // ranking.create(150, 250, 'ranking').setDepth(30)
 
     // ranking_score.clear(true, true)
-    
+    // for(let n = 0; n <= rankIndex; n++){
+    //     ranking_score.create(150, 250+n, 'num' + rank[n]).setDepth(30)
+    // }
     // if(rank.length)
     // for(let m = 0; m < 5; m++){
     //     ranking_score.create(150, 250, 'num' + rank[m]).setDepth(30)
@@ -384,6 +403,17 @@ function makePipe(scene){
     const pipeBottom = pipe.create(336, pipeTopY + 350, currentPipe.bottom)
     pipeBottom.body.allowGravity = false
 
+    const random = Phaser.Math.Between(1,3)
+    if(random == 3){
+        const point = star.create(336, pipeTopY + 170, 'star')
+        point.body.allowGravity = false
+    }
+
+}
+function collectStar(player, star){
+    star.disableBody(true, true);
+    starPoint = starPoint + 1;
+    console.log(starPoint)
 }
 
 function startGame(scene) {
@@ -391,6 +421,7 @@ function startGame(scene) {
     Initial_Message.visible = false
     player.body.allowGravity = true;
     player.body.setGravityY(900);
+    starPoint = 0;
 
     const startScore = scoreGroup.create(168, 60, 'number0')
     startScore.setDepth(20)
@@ -400,13 +431,14 @@ function startGame(scene) {
 
 function restart(){
     pipe.clear(true, true);
+    star.clear(true, true);
     gapsGroup.clear(true, true);
     medal.clear(true, true);
     scoreGroup.clear(true, true);
     scoreGroup2.clear(true, true);
     scoreGroup3.clear(true, true);
     ranking.clear(true, true);
-    ranking_score.clear(true, true);
+    // ranking_score.clear(true, true);
     player.destroy();
 
     scoreBoard.visible = false;
