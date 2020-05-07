@@ -40,9 +40,21 @@ var rank = [];
 var rankIndex = 0;
 var max = 0;
 var starPoint = 0;
+var gapPoint = 0;
+var flag;
 
 function preload ()
 {
+    this.load.image('title', 'images/title.png');
+    this.load.image('gameStartButton', 'images/play.png')
+    this.load.image('rankingButton', 'images/ranking.png')
+    this.load.image('OK', 'images/ok.jpg')
+    this.load.image('rank', 'images/rank.png')
+    // this.load.spritesheet('gameStartButton', 'images/play.png',{
+    //     frameWidth: 52,
+    //     frameHeight: 29
+    // });
+
     //배경 및 땅
     this.load.image('background', 'images/background.png');
     this.load.spritesheet('ground', 'images/ground-sprite.png', {
@@ -97,12 +109,30 @@ function preload ()
     this.load.image('gameOverCard', 'images/gameOver.png');
     this.load.image('restart', 'images/restart-button.png');
     this.load.image('scoreBoard', 'images/score_board.png');
+    this.load.image('menu', 'images/menu.jpg');
 
     this.load.image('star', 'images/star.png');
 }
 
 function create ()
 {
+    title = this.add.image(168, 241, 'background').setInteractive()
+    title.setDepth(40)
+    title.visible = true
+    gameStartButton = this.add.image(108, 350, 'gameStartButton').setInteractive()
+    gameStartButton.setDepth(40)
+    gameStartButton.visible = true
+    gameStartButton.on('pointerdown', game_start);
+
+    rankingButton = this.add.image(229, 350, 'rankingButton').setInteractive()
+    rankingButton.setDepth(40)
+    rankingButton.visible = true
+    rankingButton.on('pointerdown', show_ranking);
+
+    rank_list = this.add.image(145, 155, 'rank')
+    rank_list.setDepth(40)
+    rank_list.visible = false
+
     background = this.add.image(168, 241, 'background').setInteractive();
     background.on('pointerdown', moveBird);
 
@@ -110,11 +140,13 @@ function create ()
     pipe = this.physics.add.group();
     medal = this.physics.add.staticGroup();
     ranking = this.physics.add.staticGroup();
-    // ranking_score = this.physics.add.staticGroup();
+    ranking_score = this.physics.add.staticGroup();
     scoreGroup = this.physics.add.staticGroup();
     scoreGroup2 = this.physics.add.staticGroup();
     scoreGroup3 = this.physics.add.staticGroup();
     star = this.physics.add.group();
+    starPicture = this.physics.add.staticGroup();
+    starScore = this.physics.add.staticGroup();
     
 
     ground = this.physics.add.sprite(168, 500, 'ground');
@@ -124,6 +156,11 @@ function create ()
     Initial_Message = this.add.image(168, 161, 'Initial_Message');
     Initial_Message.setDepth(30);
     Initial_Message.visible = false;
+
+    okButton = this.add.image(168, 350, 'OK').setInteractive();
+    okButton.setDepth(40)
+    okButton.visible = false
+    okButton.on('pointerdown', ok)
 
     space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     
@@ -165,7 +202,7 @@ function create ()
         frameRate: 20
     })
 
-    PrepareGame(this);
+    main(this)
     
     gameOverCard = this.add.image(168, 120, 'gameOverCard');
     gameOverCard.setDepth(20);
@@ -175,12 +212,15 @@ function create ()
     scoreBoard.setDepth(20);
     scoreBoard.visible = false;
 
-    restartButton = this.add.image(168, 370, 'restart').setInteractive();
+    restartButton = this.add.image(108, 370, 'restart').setInteractive();
     restartButton.setDepth(20);
     restartButton.visible = false;
     restartButton.on('pointerdown', restart);
 
-    
+    menuButton = this.add.image(228, 370, 'menu').setInteractive();
+    menuButton.setDepth(20);
+    menuButton.visible = false;
+    menuButton.on('pointerdown', menu);
 }
 
 function update (){
@@ -224,17 +264,72 @@ function update (){
             child.setVelocityX(-100);
         }
     })
-    ////
+    
     gapsGroup.children.iterate(function (child) {
         child.body.setVelocityX(-100)
     })
-    ////
+    
     nextPipe++;
     if(nextPipe == 130){
         makePipe(game.scene.scenes[0])
         nextPipe = 0;
     }
     
+}
+
+function ok(){
+    ranking_score.clear(true, true)
+    okButton.visible = false
+    ranking_score.visible = false
+    rank_list.visible = false
+    menu()
+    // console.log("ok")
+}
+
+function main(scene){
+    PrepareGame(scene)
+}
+
+function menu(){
+    ranking_score.clear(true, true)
+
+    title.visible = true
+    gameStartButton.visible = true
+    rankingButton.visible = true
+    
+    // console.log("메뉴")
+}
+
+function show_ranking(){
+    ranking_score.clear(true, true)
+    gameStartButton.visible = false
+    rankingButton.visible = false
+    okButton.visible = true
+    rank_list.visible = true
+    
+    if(rankIndex < 6){
+        for(let i = 0, k = 0; i < rankIndex; i++, k++){
+            const rankScore = rank[i].toString()
+            if(rankScore.length == 1){
+                ranking_score.create(184, 50 + k *42, 'num'+rank[i]).setDepth(40)
+            }
+            else{
+                let initialPosition = 184 - ((score.toString().length * 7) / 2)
+
+                for(let i = 0; i < rankScore.length; i++){
+                    ranking_score.create(initialPosition, 50 + k *42, 'num' + rankScore[i]).setDepth(40)
+                    initialPosition = initialPosition + 15
+                }
+            }
+        }
+    }
+}
+
+function game_start(){
+    title.visible = false
+    gameStartButton.visible = false
+    rankingButton.visible = false
+    restart()
 }
 
 function PrepareGame(scene){
@@ -257,11 +352,13 @@ function PrepareGame(scene){
     scene.physics.add.overlap(player, star, collectStar, null, scene)
     scene.physics.add.overlap(player, gapsGroup, updateScore, null, scene)
     
+
     ground.anims.play('ground-moving', true);
 
 }
 
 function updateScore(_, gap) {
+   
     score++
     gap.destroy()
     // console.log(score)
@@ -336,12 +433,25 @@ function hitBird(player){
     }
     else{
         let initialPosition = 250 - ((max.toString().length * 7) / 2)
-
+        
         for(let i = 0; i < scoreString2.length; i++){
-            scoreGroup3.create(initialPosition, 235, 'num' + scoreString2[i]).setDepth(30)
+            scoreGroup3.create(initialPosition, 285, 'num' + scoreString2[i]).setDepth(30)
             initialPosition = initialPosition + 15
         }
     }
+
+    //중복이 없으면 인덱스 증가
+    for(let i = 0; i < rank.length; i++){
+        for(let j = i+1; j < rank.length; j++){
+            if(rank[i] == rank[j]){
+                flag = true
+            }
+        }
+    }
+    if(flag == false){
+        rankIndex++
+    }
+
 
     //오름차순 정렬
     rank.sort(function(a, b){
@@ -365,24 +475,10 @@ function hitBird(player){
         }
     }
 
-    // ranking.clear(true, true)
-    // ranking.create(150, 250, 'ranking').setDepth(30)
-
-    // ranking_score.clear(true, true)
-    // for(let n = 0; n <= rankIndex; n++){
-    //     ranking_score.create(150, 250+n, 'num' + rank[n]).setDepth(30)
-    // }
-    // if(rank.length)
-    // for(let m = 0; m < 5; m++){
-    //     ranking_score.create(150, 250, 'num' + rank[m]).setDepth(30)
-    // }
-    
-    rankIndex++
-
     scoreBoard.visible = true;
     gameOverCard.visible = true;
     restartButton.visible = true;
-    
+    menuButton.visible = true;
 }
 
 function makePipe(scene){
@@ -403,9 +499,11 @@ function makePipe(scene){
     const pipeBottom = pipe.create(336, pipeTopY + 350, currentPipe.bottom)
     pipeBottom.body.allowGravity = false
 
-    const random = Phaser.Math.Between(1,3)
-    if(random == 3){
-        const point = star.create(336, pipeTopY + 170, 'star')
+    //별 랜덤
+    const starRandom = Phaser.Math.Between(50,200)
+    const random = Phaser.Math.Between(1,2)
+    if(random == 2){
+        const point = star.create(450, starRandom, 'star')
         point.body.allowGravity = false
     }
 
@@ -413,7 +511,40 @@ function makePipe(scene){
 function collectStar(player, star){
     star.disableBody(true, true);
     starPoint = starPoint + 1;
-    console.log(starPoint)
+    // console.log(starPoint)
+    starPicture.create(30, 30, 'star').setDepth(30)
+    starScore.clear(true, true)
+    const starString = starPoint.toString()
+    if (starString.length == 1){
+        starScore.create(30, 60, 'num'+ starPoint).setDepth(30)
+    }
+    else{
+        let initialPosition = 168 - ((score.toString().length * 25) / 2)
+
+        for(let i = 0; i < scoreString.length; i++){
+            starScore.create(initialPosition, 60, 'num'+starString[i]).setDepth(10)
+            initialPosition = initialPosition + 30
+        }            
+    }
+
+    if(starPoint == 3){
+        score = score + 2
+        scoreGroup.clear(true, true)
+        const scoreString = score.toString()
+        if (scoreString.length == 1){
+            scoreGroup.create(168, 60, 'number'+ score).setDepth(10)
+        }
+        else{
+            let initialPosition = 168 - ((score.toString().length * 25) / 2)
+
+            for(let i = 0; i < scoreString.length; i++){
+                scoreGroup.create(initialPosition, 60, 'number'+scoreString[i]).setDepth(10)
+                initialPosition = initialPosition + 30
+            }            
+        }
+        
+        starPoint = 0;
+    }  
 }
 
 function startGame(scene) {
@@ -422,7 +553,10 @@ function startGame(scene) {
     player.body.allowGravity = true;
     player.body.setGravityY(900);
     starPoint = 0;
-
+    
+    starPicture.create(30, 30, 'star').setDepth(30)
+    const star_Score = starScore.create(30, 60, 'num0')
+    star_Score.setDepth(20)
     const startScore = scoreGroup.create(168, 60, 'number0')
     startScore.setDepth(20)
 
@@ -434,16 +568,21 @@ function restart(){
     star.clear(true, true);
     gapsGroup.clear(true, true);
     medal.clear(true, true);
+    starPicture.clear(true, true);
+    starScore.clear(true, true);
     scoreGroup.clear(true, true);
     scoreGroup2.clear(true, true);
     scoreGroup3.clear(true, true);
     ranking.clear(true, true);
-    // ranking_score.clear(true, true);
+    ranking_score.clear(true, true);
     player.destroy();
 
+    flag = false
     scoreBoard.visible = false;
     gameOverCard.visible = false;
     restartButton.visible = false;
+    menuButton.visible = false;
+
 
     PrepareGame(game.scene.scenes[0]);
 
