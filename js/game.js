@@ -45,16 +45,13 @@ var flag;
 
 function preload ()
 {
-    this.load.image('title', 'images/title.png');
+    this.load.image('title', 'images/main.png');
     this.load.image('gameStartButton', 'images/play.png')
     this.load.image('rankingButton', 'images/ranking.png')
     this.load.image('OK', 'images/ok.jpg')
     this.load.image('rank', 'images/rank.png')
-    // this.load.spritesheet('gameStartButton', 'images/play.png',{
-    //     frameWidth: 52,
-    //     frameHeight: 29
-    // });
-
+    this.load.image('title_bird', 'images/title_bird.png')
+    
     //배경 및 땅
     this.load.image('background', 'images/background.png');
     this.load.spritesheet('ground', 'images/ground-sprite.png', {
@@ -116,9 +113,14 @@ function preload ()
 
 function create ()
 {
-    title = this.add.image(168, 241, 'background').setInteractive()
+    title = this.add.image(168, 241, 'title').setInteractive()
     title.setDepth(40)
     title.visible = true
+
+    titleBird = this.add.image(168, 250, 'title_bird')
+    titleBird.setDepth(40)
+    titleBird.visible = true
+
     gameStartButton = this.add.image(108, 350, 'gameStartButton').setInteractive()
     gameStartButton.setDepth(40)
     gameStartButton.visible = true
@@ -129,7 +131,7 @@ function create ()
     rankingButton.visible = true
     rankingButton.on('pointerdown', show_ranking);
 
-    rank_list = this.add.image(145, 155, 'rank')
+    rank_list = this.add.image(230, 145, 'rank')
     rank_list.setDepth(40)
     rank_list.visible = false
 
@@ -297,7 +299,8 @@ function menu(){
     gameStartButton.visible = true
     rankingButton.visible = true
     
-    // console.log("메뉴")
+    titleBird.visible = true
+
 }
 
 function show_ranking(){
@@ -305,19 +308,36 @@ function show_ranking(){
     gameStartButton.visible = false
     rankingButton.visible = false
     okButton.visible = true
+    titleBird.visible = false
     rank_list.visible = true
-    
-    if(rankIndex < 6){
+    console.log(rank)
+    if(rankIndex < 7){
         for(let i = 0, k = 0; i < rankIndex; i++, k++){
             const rankScore = rank[i].toString()
             if(rankScore.length == 1){
-                ranking_score.create(184, 50 + k *42, 'num'+rank[i]).setDepth(40)
+                ranking_score.create(184, 45 + k *42, 'num'+rank[i]).setDepth(40)
             }
             else{
                 let initialPosition = 184 - ((score.toString().length * 7) / 2)
 
                 for(let i = 0; i < rankScore.length; i++){
-                    ranking_score.create(initialPosition, 50 + k *42, 'num' + rankScore[i]).setDepth(40)
+                    ranking_score.create(initialPosition, 45 + k *42, 'num' + rankScore[i]).setDepth(40)
+                    initialPosition = initialPosition + 15
+                }
+            }
+        }
+    }
+    else{
+        for(let i = 0, k = 0; i < 6; i++, k++){
+            const rankScore = rank[i].toString()
+            if(rankScore.length == 1){
+                ranking_score.create(184, 45 + k *42, 'num'+rank[i]).setDepth(40)
+            }
+            else{
+                let initialPosition = 184 - ((score.toString().length * 7) / 2)
+
+                for(let i = 0; i < rankScore.length; i++){
+                    ranking_score.create(initialPosition, 45 + k *42, 'num' + rankScore[i]).setDepth(40)
                     initialPosition = initialPosition + 15
                 }
             }
@@ -329,6 +349,7 @@ function game_start(){
     title.visible = false
     gameStartButton.visible = false
     rankingButton.visible = false
+    titleBird.visible = false
     restart()
 }
 
