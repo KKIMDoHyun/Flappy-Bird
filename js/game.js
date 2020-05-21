@@ -22,12 +22,10 @@ const assets = {
         bottom: 'pipe-bottom'
     }
 }
+var game = new Phaser.Game(config);
 var bird;
-var platforms;
-var JumpKey;
 var gameOver;
 var gameStarted;
-var game = new Phaser.Game(config);
 var framesMove = 0;
 var player;
 var cursors;
@@ -285,7 +283,6 @@ function ok(){
     ranking_score.visible = false
     rank_list.visible = false
     menu()
-    // console.log("ok")
 }
 
 function main(scene){
@@ -310,18 +307,18 @@ function show_ranking(){
     okButton.visible = true
     titleBird.visible = false
     rank_list.visible = true
-    console.log(rank)
+    // console.log(rank)
     if(rankIndex < 7){
         for(let i = 0, k = 0; i < rankIndex; i++, k++){
             const rankScore = rank[i].toString()
             if(rankScore.length == 1){
-                ranking_score.create(184, 45 + k *42, 'num'+rank[i]).setDepth(40)
+                ranking_score.create(184, 45 + k *45, 'num'+rank[i]).setDepth(40)
             }
             else{
                 let initialPosition = 184 - ((score.toString().length * 7) / 2)
 
                 for(let i = 0; i < rankScore.length; i++){
-                    ranking_score.create(initialPosition, 45 + k *42, 'num' + rankScore[i]).setDepth(40)
+                    ranking_score.create(initialPosition, 45 + k *45, 'num' + rankScore[i]).setDepth(40)
                     initialPosition = initialPosition + 15
                 }
             }
@@ -331,13 +328,13 @@ function show_ranking(){
         for(let i = 0, k = 0; i < 6; i++, k++){
             const rankScore = rank[i].toString()
             if(rankScore.length == 1){
-                ranking_score.create(184, 45 + k *42, 'num'+rank[i]).setDepth(40)
+                ranking_score.create(184, 45 + k *45, 'num'+rank[i]).setDepth(40)
             }
             else{
                 let initialPosition = 184 - ((score.toString().length * 7) / 2)
 
                 for(let i = 0; i < rankScore.length; i++){
-                    ranking_score.create(initialPosition, 45 + k *42, 'num' + rankScore[i]).setDepth(40)
+                    ranking_score.create(initialPosition, 45 + k *45, 'num' + rankScore[i]).setDepth(40)
                     initialPosition = initialPosition + 15
                 }
             }
